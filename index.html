@@ -22,7 +22,6 @@
             overflow: hidden;
         }
 
-        /* Animated Background */
         .background {
             position: fixed;
             top: 0;
@@ -36,7 +35,6 @@
                 radial-gradient(circle at 50% 100%, rgba(0, 255, 200, 0.05) 0%, transparent 50%);
         }
 
-        /* Floating particles */
         .particles {
             position: fixed;
             top: 0;
@@ -86,7 +84,6 @@
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
         }
 
-        /* Header */
         .header {
             text-align: center;
             margin-bottom: 20px;
@@ -126,7 +123,6 @@
             font-size: 16px;
         }
 
-        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -167,7 +163,6 @@
             color: #00FF88;
         }
 
-        /* Progress Bar */
         .progress-section {
             background: rgba(255, 255, 255, 0.05);
             padding: 15px;
@@ -220,7 +215,6 @@
             }
         }
 
-        /* Main Click Button */
         .click-button-wrapper {
             position: relative;
             margin: 20px 0;
@@ -294,7 +288,6 @@
             opacity: 0.8;
         }
 
-        /* Click animation */
         .click-ripple {
             position: fixed;
             pointer-events: none;
@@ -318,7 +311,6 @@
             }
         }
 
-        /* Floating +0.01 text */
         .float-text {
             position: fixed;
             pointer-events: none;
@@ -340,7 +332,6 @@
             }
         }
 
-        /* Bottom Menu */
         .bottom-menu {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -375,7 +366,6 @@
             margin-bottom: 3px;
         }
 
-        /* Notification for bot communication */
         .notification {
             position: fixed;
             top: 20px;
@@ -407,7 +397,6 @@
             }
         }
 
-        /* Responsive */
         @media (max-width: 480px) {
             .game-container {
                 padding: 15px;
@@ -436,12 +425,9 @@
 <body>
     <div class="background"></div>
     <div class="particles" id="particles"></div>
-
-    <!-- Notification -->
     <div class="notification" id="notification"></div>
 
     <div class="game-container">
-        <!-- Header -->
         <div class="header">
             <h1>💰 UAH CLICKER</h1>
             <div class="user-info">
@@ -450,7 +436,6 @@
             </div>
         </div>
 
-        <!-- Stats Grid -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-label">💰 Balance</div>
@@ -470,7 +455,6 @@
             </div>
         </div>
 
-        <!-- Progress Bar -->
         <div class="progress-section">
             <div class="progress-label">
                 <span>🎯 Click Progress</span>
@@ -481,7 +465,6 @@
             </div>
         </div>
 
-        <!-- Main Click Button -->
         <div class="click-button-wrapper">
             <button class="click-button" id="clickButton">
                 <span class="coin-icon">🪙</span>
@@ -490,7 +473,6 @@
             </button>
         </div>
 
-        <!-- Bottom Menu -->
         <div class="bottom-menu">
             <button class="menu-btn" onclick="refreshStats()">
                 <span class="icon">🔄</span>
@@ -508,7 +490,7 @@
     </div>
 
     <script>
-        // Game state
+        let tg = null;
         let userData = {
             username: 'Player',
             balance: 0,
@@ -519,10 +501,6 @@
             total_earned: 0
         };
 
-        let telegramUser = null;
-        let tg = null;
-
-        // Show notification
         function showNotification(message, isError = false) {
             const notif = document.getElementById('notification');
             notif.textContent = message;
@@ -533,58 +511,6 @@
             }, 3000);
         }
 
-        // Initialize Telegram Web App
-        function initTelegram() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                tg = window.Telegram.WebApp;
-                telegramUser = tg.initDataUnsafe.user;
-                
-                if (telegramUser) {
-                    userData.username = telegramUser.username || 
-                                       telegramUser.first_name || 
-                                       'Player';
-                    document.getElementById('username').textContent = '@' + userData.username;
-                }
-                
-                // Expand the app to full screen
-                tg.ready();
-                tg.expand();
-                
-                // Set up message listener for bot responses
-                tg.onEvent('message', function(data) {
-                    try {
-                        const parsed = JSON.parse(data);
-                        if (parsed.action === 'update') {
-                            updateStats(parsed.data);
-                            showNotification('✅ Stats updated!');
-                        } else if (parsed.action === 'leaderboard') {
-                            alert(parsed.data);
-                        }
-                    } catch (e) {
-                        console.error('Error parsing message:', e);
-                    }
-                });
-                
-                // Load user data from bot
-                loadUserData();
-            } else {
-                // Fallback for testing
-                document.getElementById('username').textContent = '@TestUser';
-                showNotification('⚠️ Running in test mode');
-                loadUserData();
-            }
-        }
-
-        // Load user data from bot
-        function loadUserData() {
-            if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'getData'
-                }));
-            }
-        }
-
-        // Update stats from bot
         function updateStats(data) {
             userData = data;
             document.getElementById('balance').textContent = data.balance.toFixed(2);
@@ -592,15 +518,13 @@
             document.getElementById('sessionClicks').textContent = data.session_clicks.toLocaleString();
             document.getElementById('streak').textContent = data.click_streak + 'x';
             
-            // Update progress
             const progress = Math.min((data.session_clicks % 100) / 100 * 100, 100);
             document.getElementById('progressFill').style.width = progress + '%';
             document.getElementById('progressText').textContent = Math.round(progress) + '%';
         }
 
-        // Handle click
         function handleClick(event) {
-            // Create ripple effect
+            // Visual effects
             const ripple = document.createElement('div');
             ripple.className = 'click-ripple';
             ripple.style.left = event.clientX + 'px';
@@ -608,7 +532,6 @@
             document.body.appendChild(ripple);
             setTimeout(() => ripple.remove(), 800);
 
-            // Create floating +0.01 text
             const floatText = document.createElement('div');
             floatText.className = 'float-text';
             floatText.textContent = '+0.01 UAH';
@@ -619,54 +542,93 @@
 
             // Send click to bot
             if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'click'
-                }));
-                showNotification('💰 +0.01 UAH!');
+                const data = JSON.stringify({ action: 'click' });
+                console.log('Sending click:', data);
+                tg.sendData(data);
+                showNotification('💰 Click sent!');
             } else {
                 showNotification('⚠️ Bot not connected!', true);
+                // Demo mode - update locally
+                updateStats({
+                    ...userData,
+                    balance: userData.balance + 0.01,
+                    total_clicks: userData.total_clicks + 1,
+                    session_clicks: userData.session_clicks + 1,
+                    click_streak: userData.click_streak + 1
+                });
             }
         }
 
-        // Refresh stats
         function refreshStats() {
             if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'refresh'
-                }));
+                tg.sendData(JSON.stringify({ action: 'refresh' }));
                 showNotification('🔄 Refreshing...');
             } else {
                 showNotification('⚠️ Bot not connected!', true);
             }
         }
 
-        // Show leaderboard
         function showLeaderboard() {
             if (tg) {
-                tg.sendData(JSON.stringify({
-                    action: 'leaderboard'
-                }));
-                showNotification('🏆 Loading leaderboard...');
+                tg.sendData(JSON.stringify({ action: 'leaderboard' }));
+                showNotification('🏆 Loading...');
             } else {
                 showNotification('⚠️ Bot not connected!', true);
             }
         }
 
-        // Reset session
         function resetSession() {
-            if (confirm('Reset this session? Your total balance will be preserved.')) {
+            if (confirm('Reset this session?')) {
                 if (tg) {
-                    tg.sendData(JSON.stringify({
-                        action: 'reset'
-                    }));
-                    showNotification('🆕 Session reset!');
+                    tg.sendData(JSON.stringify({ action: 'reset' }));
+                    showNotification('🆕 Resetting...');
                 } else {
                     showNotification('⚠️ Bot not connected!', true);
                 }
             }
         }
 
-        // Event listener for click button
+        // Initialize Telegram Web App
+        function initTelegram() {
+            if (window.Telegram && window.Telegram.WebApp) {
+                tg = window.Telegram.WebApp;
+                const user = tg.initDataUnsafe.user;
+                
+                if (user) {
+                    const username = user.username || user.first_name || 'Player';
+                    document.getElementById('username').textContent = '@' + username;
+                    userData.username = username;
+                }
+                
+                tg.ready();
+                tg.expand();
+                
+                // Set up message handler
+                tg.onEvent('message', function(data) {
+                    console.log('Received from bot:', data);
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (parsed.action === 'update') {
+                            updateStats(parsed.data);
+                            showNotification('✅ Stats updated!');
+                        } else if (parsed.action === 'leaderboard') {
+                            alert(parsed.data);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing:', e);
+                    }
+                });
+                
+                // Load initial data
+                tg.sendData(JSON.stringify({ action: 'getData' }));
+                showNotification('🎮 Game connected!');
+            } else {
+                document.getElementById('username').textContent = '@TestUser';
+                showNotification('⚠️ Running in demo mode', true);
+            }
+        }
+
+        // Event listeners
         document.getElementById('clickButton').addEventListener('click', handleClick);
         document.getElementById('clickButton').addEventListener('touchstart', function(e) {
             e.preventDefault();
@@ -674,7 +636,7 @@
             handleClick({ clientX: touch.clientX, clientY: touch.clientY });
         });
 
-        // Generate particles
+        // Create particles
         function createParticles() {
             const container = document.getElementById('particles');
             for (let i = 0; i < 50; i++) {
@@ -689,7 +651,6 @@
             }
         }
 
-        // Initialize
         createParticles();
         initTelegram();
     </script>
