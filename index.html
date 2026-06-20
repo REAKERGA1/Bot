@@ -3,38 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UAH Clicker</title>
+    <title>💰 UAH Clicker</title>
     <style>
         body { background: #1a1a2e; color: white; text-align: center; font-family: sans-serif; }
-        .stat { font-size: 20px; color: gold; }
+        .stat { font-size: 24px; color: gold; margin: 20px; }
+        button { padding: 20px 40px; font-size: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
     <h1>💰 UAH Clicker</h1>
-    <p id="user-display">Checking user...</p>
-    <div class="stat">Balance: <span id="balance">0.00</span> UAH</div>
-    <button id="clickButton" style="padding: 20px; font-size: 20px;">CLICK TO EARN</button>
+    <p id="user-display">Loading user...</p>
+    <div class="stat">Balance: <span id="balance">0.00</span></div>
+    <button id="clickBtn">CLICK ME</button>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 1. Properly detect user
+        // Detect user
         let user = tg.initDataUnsafe?.user;
-        if (user) {
-            document.getElementById('user-display').textContent = "Welcome, @" + (user.username || user.first_name);
-        } else {
-            document.getElementById('user-display').textContent = "Welcome, Guest (Open in Telegram to see your name)";
-        }
+        document.getElementById('user-display').textContent = user ? "Welcome, " + user.first_name : "Not inside Telegram";
 
-        // 2. Local update logic
+        // Logic
         let balance = 0.00;
-        document.getElementById('clickButton').onclick = () => {
+        document.getElementById('clickBtn').onclick = () => {
             balance += 0.01;
             document.getElementById('balance').textContent = balance.toFixed(2);
             
-            // Send data to bot without "connecting"
+            // This sends the data to the bot
             tg.sendData(JSON.stringify({ action: 'click' }));
         };
     </script>
