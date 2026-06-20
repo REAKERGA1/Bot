@@ -3,41 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💰 UAH Clicker Game</title>
+    <title>UAH Clicker</title>
     <style>
-        body { font-family: sans-serif; background: #1a1a2e; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .game-container { text-align: center; background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px; }
-        .click-button { width: 150px; height: 150px; border-radius: 50%; border: none; background: gold; cursor: pointer; font-size: 20px; }
+        body { background: #1a1a2e; color: white; text-align: center; font-family: sans-serif; }
+        .stat { font-size: 20px; color: gold; }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>💰 UAH CLICKER</h1>
-        <div id="username">@Player</div>
-        <div>Balance: <span id="balance">0.00</span> UAH</div>
-        <button class="click-button" id="clickButton">CLICK</button>
-        <div style="margin-top:20px">
-            <button onclick="showLeaderboard()">🏆 Leaderboard</button>
-        </div>
-    </div>
+    <h1>💰 UAH Clicker</h1>
+    <p id="user-display">Checking user...</p>
+    <div class="stat">Balance: <span id="balance">0.00</span> UAH</div>
+    <button id="clickButton" style="padding: 20px; font-size: 20px;">CLICK TO EARN</button>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
-        let userData = { balance: 0.00, clicks: 0 };
-        function updateUI() {
-            document.getElementById('balance').textContent = userData.balance.toFixed(2);
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        // 1. Properly detect user
+        let user = tg.initDataUnsafe?.user;
+        if (user) {
+            document.getElementById('user-display').textContent = "Welcome, @" + (user.username || user.first_name);
+        } else {
+            document.getElementById('user-display').textContent = "Welcome, Guest (Open in Telegram to see your name)";
         }
+
+        // 2. Local update logic
+        let balance = 0.00;
         document.getElementById('clickButton').onclick = () => {
-            userData.balance += 0.01;
-            updateUI();
-            if (window.Telegram?.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({ action: 'click' }));
-            }
+            balance += 0.01;
+            document.getElementById('balance').textContent = balance.toFixed(2);
+            
+            // Send data to bot without "connecting"
+            tg.sendData(JSON.stringify({ action: 'click' }));
         };
-        function showLeaderboard() {
-            if (window.Telegram?.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({ action: 'leaderboard' }));
-            }
-            alert("Leaderboard sent to your Telegram chat!");
-        }
     </script>
 </body>
 </html>
