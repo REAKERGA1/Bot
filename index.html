@@ -3,35 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💰 UAH Clicker</title>
+    <title>UAH Clicker</title>
     <style>
-        body { background: #1a1a2e; color: white; text-align: center; font-family: sans-serif; }
+        body { background: #1a1a2e; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
         .stat { font-size: 24px; color: gold; margin: 20px; }
-        button { padding: 20px 40px; font-size: 20px; cursor: pointer; }
+        button { padding: 20px 40px; font-size: 20px; cursor: pointer; border-radius: 10px; border: none; background: #4e44ce; color: white; }
     </style>
 </head>
 <body>
     <h1>💰 UAH Clicker</h1>
-    <p id="user-display">Loading user...</p>
-    <div class="stat">Balance: <span id="balance">0.00</span></div>
+    <div class="stat">Balance: <span id="balance">0.00</span> UAH</div>
     <button id="clickBtn">CLICK ME</button>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
+        // 1. Setup Telegram Web App
         let tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Detect user
-        let user = tg.initDataUnsafe?.user;
-        document.getElementById('user-display').textContent = user ? "Welcome, " + user.first_name : "Not inside Telegram";
-
-        // Logic
+        // 2. Simple click logic
         let balance = 0.00;
+        
         document.getElementById('clickBtn').onclick = () => {
             balance += 0.01;
             document.getElementById('balance').textContent = balance.toFixed(2);
             
-            // This sends the data to the bot
+            // Send the click action to the bot to save it
             tg.sendData(JSON.stringify({ action: 'click' }));
         };
     </script>
