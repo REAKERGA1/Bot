@@ -4,50 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UAH Clicker</title>
-
     <style>
-        body {
-            background: #1a1a2e;
-            color: white;
-            text-align: center;
-            font-family: sans-serif;
-            padding-top: 50px;
-        }
-
-        .stat {
-            font-size: 24px;
-            color: gold;
-            margin: 20px;
-        }
-
-        button {
-            padding: 20px 40px;
-            font-size: 20px;
-            cursor: pointer;
-            border-radius: 10px;
-            border: none;
-            background: #4e44ce;
-            color: white;
-        }
+        body { background: #1a1a2e; color: white; text-align: center; font-family: sans-serif; padding-top: 50px; }
+        .stat { font-size: 24px; color: gold; margin: 20px; }
+        button { padding: 20px 40px; font-size: 20px; cursor: pointer; border-radius: 10px; border: none; background: #4e44ce; color: white; }
     </style>
 </head>
 <body>
-
     <h1>💰 UAH Clicker</h1>
-
-    <div class="stat">
-        Balance: <span id="balance">0.00</span> UAH
-    </div>
-
+    <div class="stat">Balance: <span id="balance">0.00</span> UAH</div>
     <button id="clickBtn">CLICK ME</button>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let balance = parseFloat(localStorage.getItem("balance")) || 0;
+        // Get balance from URL (passed by bot) or localStorage
+        const urlParams = new URLSearchParams(window.location.search);
+        let balance = parseFloat(urlParams.get('balance')) || parseFloat(localStorage.getItem("balance")) || 0;
 
         const balanceText = document.getElementById("balance");
 
@@ -60,10 +35,10 @@
 
         document.getElementById("clickBtn").addEventListener("click", () => {
             balance += 0.01;
-
             updateBalance();
 
             try {
+                // Send the new total balance back to the bot
                 tg.sendData(JSON.stringify({
                     action: "click",
                     balance: balance
@@ -73,6 +48,5 @@
             }
         });
     </script>
-
 </body>
 </html>
