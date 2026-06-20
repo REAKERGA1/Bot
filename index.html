@@ -375,6 +375,38 @@
             margin-bottom: 3px;
         }
 
+        /* Notification for bot communication */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: #00FF88;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 1000;
+            display: none;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .notification.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+
         /* Responsive */
         @media (max-width: 480px) {
             .game-container {
@@ -404,6 +436,9 @@
 <body>
     <div class="background"></div>
     <div class="particles" id="particles"></div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
 
     <div class="game-container">
         <!-- Header -->
@@ -485,11 +520,23 @@
         };
 
         let telegramUser = null;
+        let tg = null;
+
+        // Show notification
+        function showNotification(message, isError = false) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.style.color = isError ? '#FF4444' : '#00FF88';
+            notif.classList.add('show');
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 3000);
+        }
 
         // Initialize Telegram Web App
         function initTelegram() {
             if (window.Telegram && window.Telegram.WebApp) {
-                const tg = window.Telegram.WebApp;
+                tg = window.Telegram.WebApp;
                 telegramUser = tg.initDataUnsafe.user;
                 
                 if (telegramUser) {
@@ -499,23 +546,39 @@
                     document.getElementById('username').textContent = '@' + userData.username;
                 }
                 
+                // Expand the app to full screen
                 tg.ready();
                 tg.expand();
+                
+                // Set up message listener for bot responses
+                tg.onEvent('message', function(data) {
+                    try {
+                        const parsed = JSON.parse(data);
+                        if (parsed.action === 'update') {
+                            updateStats(parsed.data);
+                            showNotification('✅ Stats updated!');
+                        } else if (parsed.action === 'leaderboard') {
+                            alert(parsed.data);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing message:', e);
+                    }
+                });
                 
                 // Load user data from bot
                 loadUserData();
             } else {
                 // Fallback for testing
                 document.getElementById('username').textContent = '@TestUser';
+                showNotification('⚠️ Running in test mode');
                 loadUserData();
             }
         }
 
         // Load user data from bot
         function loadUserData() {
-            // Send message to bot to get user data
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({
+            if (tg) {
+                tg.sendData(JSON.stringify({
                     action: 'getData'
                 }));
             }
@@ -555,38 +618,50 @@
             setTimeout(() => floatText.remove(), 1000);
 
             // Send click to bot
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({
+            if (tg) {
+                tg.sendData(JSON.stringify({
                     action: 'click'
                 }));
+                showNotification('💰 +0.01 UAH!');
+            } else {
+                showNotification('⚠️ Bot not connected!', true);
             }
         }
 
         // Refresh stats
         function refreshStats() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({
+            if (tg) {
+                tg.sendData(JSON.stringify({
                     action: 'refresh'
                 }));
+                showNotification('🔄 Refreshing...');
+            } else {
+                showNotification('⚠️ Bot not connected!', true);
             }
         }
 
         // Show leaderboard
         function showLeaderboard() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.sendData(JSON.stringify({
+            if (tg) {
+                tg.sendData(JSON.stringify({
                     action: 'leaderboard'
                 }));
+                showNotification('🏆 Loading leaderboard...');
+            } else {
+                showNotification('⚠️ Bot not connected!', true);
             }
         }
 
         // Reset session
         function resetSession() {
             if (confirm('Reset this session? Your total balance will be preserved.')) {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.sendData(JSON.stringify({
+                if (tg) {
+                    tg.sendData(JSON.stringify({
                         action: 'reset'
                     }));
+                    showNotification('🆕 Session reset!');
+                } else {
+                    showNotification('⚠️ Bot not connected!', true);
                 }
             }
         }
@@ -613,20 +688,6 @@
                 container.appendChild(particle);
             }
         }
-
-        // Handle data from bot
-        window.handleBotData = function(data) {
-            try {
-                const parsed = JSON.parse(data);
-                if (parsed.action === 'update') {
-                    updateStats(parsed.data);
-                } else if (parsed.action === 'leaderboard') {
-                    alert(parsed.data);
-                }
-            } catch (e) {
-                console.error('Error parsing bot data:', e);
-            }
-        };
 
         // Initialize
         createParticles();
